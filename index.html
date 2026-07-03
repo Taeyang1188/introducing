@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>박태양 — SELECT YOUR ERA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;900&family=Space+Grotesk:wght@400;500;700&family=Pretendard:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void:#0c0904;
+  --void-2:#171009;
+  --ink:#ede4d6;
+  --ink-dim:#a89880;
+  --ember:#e0a568;
+  --teal:#e0a568;
+  --wood:#5d4f3f;
+  --parchment:#ece4d2;
+  --parchment-dim:#c9c0a8;
+  --line: rgba(237,228,214,0.14);
+  --glow: 0 0 40px rgba(224,165,104,0.35);
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{height:100%;}
+body{
+  background: radial-gradient(120% 100% at 50% 0%, #1c140a 0%, var(--void) 55%, #060402 100%);
+  color:var(--ink);
+  font-family:'Pretendard','Noto Serif KR',sans-serif;
+  overflow-x:hidden;
+  min-height:100vh;
+  position:relative;
+}
+[lang-en]{display:none;}
+body.lang-en [lang-en]{display:inline;}
+body.lang-en [lang-ko]{display:none;}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:fixed; top:0; left:0; right:0; z-index:50;
+  display:flex; justify-content:space-between; align-items:center;
+  padding:22px 28px;
+  pointer-events:none;
+}
+.topbar > *{pointer-events:auto;}
+.icon-btn{
+  width:44px; height:44px; border-radius:50%;
+  background:rgba(28,20,10,0.65); border:1px solid var(--line);
+  backdrop-filter: blur(6px);
+  color:var(--ink); display:flex; align-items:center; justify-content:center;
+  cursor:pointer; transition:.25s;
+}
+.icon-btn:hover{ border-color:var(--teal); box-shadow:var(--glow); }
+.lang-toggle{
+  display:flex; gap:0; border:1px solid var(--line); border-radius:999px; overflow:hidden;
+  background:rgba(28,20,10,0.65); backdrop-filter: blur(6px);
+}
+.lang-toggle button{
+  border:none; background:transparent; color:var(--ink-dim);
+  font-family:'Space Grotesk',sans-serif; font-size:12px; letter-spacing:.08em;
+  padding:10px 16px; cursor:pointer; transition:.2s;
+}
+.lang-toggle button.active{ background:var(--teal); color:#2a1806; font-weight:700; }
+
+/* ---------- side menu ---------- */
+.menu-panel{
+  position:fixed; top:0; left:0; bottom:0; width:min(340px,86vw); z-index:60;
+  background:linear-gradient(180deg,#261b0f 0%, #140d06 100%);
+  border-right:1px solid var(--line);
+  transform:translateX(-105%); transition:transform .45s cubic-bezier(.7,0,.2,1);
+  padding:90px 30px 30px;
+  display:flex; flex-direction:column; gap:6px;
+}
+.menu-panel.open{ transform:translateX(0); }
+.menu-panel h3{
+  font-family:'Space Grotesk',sans-serif; font-size:11px; letter-spacing:.2em;
+  color:var(--ink-dim); text-transform:uppercase; margin:22px 0 10px;
+}
+.menu-panel a, .menu-item{
+  display:block; color:var(--ink); text-decoration:none; font-size:15px;
+  padding:10px 12px; border-radius:8px; transition:.2s; cursor:pointer;
+  border:1px solid transparent;
+}
+.menu-panel a:hover, .menu-item:hover{ background:rgba(224,165,104,0.1); border-color:var(--line); }
+.menu-overlay{
+  position:fixed; inset:0; background:rgba(8,5,2,0.55); z-index:55;
+  opacity:0; pointer-events:none; transition:opacity .35s;
+}
+.menu-overlay.open{ opacity:1; pointer-events:auto; }
+
+.gallery-mini{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px;}
+.gallery-mini .g-item{
+  aspect-ratio:1/1; border-radius:10px; background:#2b1f12 center/cover no-repeat;
+  border:1px solid var(--line); display:flex; align-items:flex-end; padding:8px;
+  font-size:11px; color:var(--ink-dim); position:relative; overflow:hidden;
+}
+.gallery-mini .g-item::after{
+  content:''; position:absolute; inset:0; background:linear-gradient(0deg,rgba(0,0,0,.7),transparent 60%);
+}
+.gallery-mini .g-item span{ position:relative; z-index:1; }
+.gallery-mini .g-item.disabled{ pointer-events:none; cursor:default; opacity:.45; filter:grayscale(.4); }
+
+/* ---------- full-viewport hero stage ---------- */
+.hero-stage{
+  position:relative; width:100%; height:100vh; min-height:560px; max-height:980px;
+  overflow:hidden;
+}
+.hero-photo{
+  position:absolute; inset:0;
+  background-image:url('./assets/bg/room.webp');
+  background-size:cover; background-position:center 32%;
+  filter:grayscale(.95) brightness(.22); /* the room "before the lamp turns on" */
+}
+/* full-color copy of the room, revealed as an expanding circle of light from the lamp */
+.hero-photo-lit{
+  position:absolute; inset:0;
+  background-image:url('./assets/bg/room.webp');
+  background-size:cover; background-position:center 32%;
+  clip-path:circle(0% at 93% 53%);
+  animation: lightSpread 2s cubic-bezier(.3,.55,.25,1) .8s forwards;
+}
+@keyframes lightSpread{
+  from{ clip-path:circle(0% at 93% 53%); }
+  to{ clip-path:circle(155% at 93% 53%); }
+}
+/* the lamp itself: warm glow that flickers awake before the light spreads */
+.lamp-glow{
+  position:absolute; left:93%; top:53%; width:36vmin; height:36vmin;
+  transform:translate(-50%,-50%); border-radius:50%;
+  background:radial-gradient(circle, rgba(255,199,124,.6) 0%, rgba(255,180,90,.2) 42%, transparent 70%);
+  filter:blur(6px); opacity:0; pointer-events:none; z-index:2;
+  animation: lampFlicker 1.15s ease-out .35s forwards;
+}
+@keyframes lampFlicker{
+  0%{ opacity:0; }
+  12%{ opacity:.75; }
+  20%{ opacity:.08; }
+  34%{ opacity:.9; }
+  42%{ opacity:.25; }
+  58%{ opacity:1; }
+  100%{ opacity:.45; } /* settles into a soft ambient glow */
+}
+.hero-title{ opacity:0; animation: fadeDown .9s ease-out 1.4s forwards; }
+@keyframes fadeDown{ from{ opacity:0; transform:translateY(-10px);} to{ opacity:1; transform:translateY(0);} }
+.slot{ opacity:0; animation: figureIn .8s ease-out forwards; }
+/* figures wake right → left, following the spreading lamplight */
+.slot:nth-child(4){ animation-delay:1.5s; }
+.slot:nth-child(3){ animation-delay:1.78s; }
+.slot:nth-child(2){ animation-delay:2.06s; }
+.slot:nth-child(1){ animation-delay:2.34s; }
+@keyframes figureIn{ from{ opacity:0; transform:translateY(12px);} to{ opacity:1; transform:translateY(0);} }
+@media (prefers-reduced-motion: reduce){
+  .hero-photo{ filter:none; }
+  .hero-photo-lit{ animation:none; clip-path:none; }
+  .lamp-glow{ display:none; }
+  .hero-title,.slot{ animation:none; opacity:1; }
+}
+
+/* ---------- future door (sealed chapter) ---------- */
+.door-hotspot{
+  position:absolute; left:71.5%; top:5%; width:16.5%; height:80%;
+  z-index:3; cursor:pointer; border-radius:8px;
+  transition: box-shadow .35s ease, background .35s ease;
+}
+.door-hotspot:hover{
+  background:rgba(224,165,104,0.05);
+  box-shadow: inset 0 0 60px rgba(224,165,104,0.22), 0 0 30px rgba(224,165,104,0.12);
+}
+.door-hotspot .door-tag{
+  position:absolute; left:50%; top:8%; transform:translateX(-50%);
+  white-space:nowrap; font-family:'Space Grotesk',sans-serif; font-size:11px; letter-spacing:.18em;
+  color:var(--ink-dim); background:rgba(16,11,5,.75); border:1px solid var(--line);
+  padding:5px 12px; border-radius:999px; opacity:0; transition:.3s; text-transform:uppercase;
+}
+.door-hotspot:hover .door-tag{ opacity:1; }
+
+/* finale: once all four eras are awakened, light begins to leak from behind the door */
+.door-hotspot.lit{
+  box-shadow: inset 0 0 70px rgba(255,201,122,.14);
+  animation: doorWake 1.6s ease-out;
+}
+.door-hotspot.lit::before{ /* seam of light down the door's opening edge */
+  content:''; position:absolute; left:-1px; top:3%; bottom:2%; width:3px;
+  background:linear-gradient(180deg, transparent 0%, rgba(255,214,150,.95) 30%, rgba(255,206,132,.9) 70%, transparent 100%);
+  filter:blur(1.2px);
+  animation: seamBreath 3.2s ease-in-out infinite;
+}
+.door-hotspot.lit::after{ /* light spilling under the door onto the floor */
+  content:''; position:absolute; left:6%; right:6%; bottom:-1.4%; height:10px;
+  background:radial-gradient(ellipse at center top, rgba(255,206,132,.75), transparent 72%);
+  filter:blur(3px);
+  animation: seamBreath 3.2s ease-in-out infinite .4s;
+}
+@keyframes seamBreath{ 0%,100%{ opacity:.55; } 50%{ opacity:1; } }
+@keyframes doorWake{ 0%{ box-shadow: inset 0 0 0 rgba(255,201,122,0);} 45%{ box-shadow: inset 0 0 110px rgba(255,201,122,.3);} 100%{ box-shadow: inset 0 0 70px rgba(255,201,122,.14);} }
+@media (prefers-reduced-motion: reduce){
+  .door-hotspot.lit, .door-hotspot.lit::before, .door-hotspot.lit::after{ animation:none; }
+}
+
+.hero-scrim{
+  position:absolute; inset:0; z-index:1; pointer-events:none;
+  background:
+    linear-gradient(180deg, rgba(6,4,2,.72) 0%, rgba(6,4,2,.12) 24%, rgba(6,4,2,.04) 55%, rgba(6,4,2,.5) 86%, rgba(6,4,2,.82) 100%);
+}
+.hero-title{
+  position:absolute; top:0; left:0; right:0; z-index:5;
+  text-align:center; padding:86px 20px 0;
+}
+.eyebrow{
+  font-family:'Space Grotesk',sans-serif; font-size:12px; letter-spacing:.35em;
+  color:var(--teal); text-transform:uppercase; margin-bottom:14px;
+  text-shadow:0 2px 12px rgba(0,0,0,.7);
+}
+.hero-title h1{
+  font-family:'Noto Serif KR',serif; font-weight:900; font-size:clamp(26px,4.4vw,50px);
+  letter-spacing:-0.01em; line-height:1.15; text-shadow:0 6px 24px rgba(0,0,0,.8);
+}
+.hero-title p{
+  color:var(--ink-dim); margin-top:10px; font-size:13px; max-width:480px; margin-inline:auto;
+  text-shadow:0 2px 10px rgba(0,0,0,.85);
+}
+
+.book-hotspot{
+  position:absolute; width:38px; height:38px; border-radius:50%;
+  cursor:pointer; z-index:6; transition:.2s; /* above the figures so overlap never blocks it */
+  background:rgba(224,165,104,0.0);
+  border:1.5px dashed rgba(237,228,214,0.4);
+}
+.book-hotspot:hover{ background:rgba(224,165,104,0.18); border-color:var(--ember); box-shadow:0 0 16px rgba(224,165,104,.5); transform:scale(1.15); }
+
+.figures-row{
+  position:absolute; left:0; right:0; bottom:3%;
+  z-index:4; pointer-events:none; /* only the figures themselves should catch clicks, not the empty column space */
+  display:flex; align-items:flex-end; justify-content:space-between;
+  padding:0 3%;
+}
+@media (max-width:820px){
+  .hero-title{ padding-top:76px; }
+  .hero-title p{ display:none; }
+  .figures-row{
+    bottom:3%; padding:0 2%;
+    display:grid; grid-template-columns:1fr 1fr;
+    align-items:end; justify-items:center; row-gap:2.5vh;
+  }
+  .door-hotspot{ display:none; } /* door crop is unreliable on narrow screens */
+}
+
+.slot{
+  position:relative; cursor:pointer; pointer-events:none;
+  flex:1 1 0; min-width:0;
+  display:flex; justify-content:center;
+}
+.slot.locked{ cursor:not-allowed; }
+.ground-shadow{
+  position:absolute; bottom:-1.2vh; left:50%; transform:translateX(-50%);
+  width:13vh; height:2vh; border-radius:50%;
+  background:radial-gradient(closest-side, rgba(0,0,0,.6), transparent 80%);
+  z-index:0;
+}
+.figure-wrap{
+  position:relative; height:44vh; display:flex; align-items:flex-end; justify-content:center;
+  transition: height .65s cubic-bezier(.3,1.1,.4,1);
+  pointer-events:auto; /* re-enable hit-testing only on the actual figure */
+}
+.figure-svg{
+  height:100%; width:auto; max-width:34vw; display:block;
+  object-fit:contain; object-position:bottom center;
+  transition: filter .45s ease, opacity .35s ease;
+  position:relative; z-index:1;
+}
+/* default: crouched pure-black shadow, true pose/height, no color yet */
+.pose-shadow{ filter:brightness(0) opacity(0.92) drop-shadow(0 0 3px rgba(237,228,214,0.28)) drop-shadow(0 0 14px rgba(0,0,0,0.6)); }
+/* hover: full color reveal (not desaturated), same pose/height as default */
+.slot:not(.locked):hover .pose-shadow{
+  filter: brightness(1) saturate(1.05) drop-shadow(0 0 18px var(--stage-color,var(--teal)));
+}
+/* awakened: pose swapped to the taller/standing photo + wrap height grows via JS */
+.slot.awake .pose-shadow{
+  filter:brightness(1) saturate(1.05) drop-shadow(0 0 28px var(--stage-color,var(--teal)));
+}
+.burst{
+  position:absolute; left:50%; bottom:6%; width:10px; height:10px; border-radius:50%;
+  transform:translate(-50%,50%); background:var(--stage-color,var(--teal));
+  opacity:0; pointer-events:none;
+}
+.slot.awake .burst{ animation:burstOut .7s ease-out forwards; }
+@keyframes burstOut{
+  0%{ opacity:.9; width:10px; height:10px;}
+  100%{ opacity:0; width:340px; height:340px;}
+}
+
+.lock-badge{
+  position:absolute; top:4%; right:4%; width:28px; height:28px; border-radius:50%;
+  background:rgba(20,13,6,.7); border:1px solid var(--line);
+  display:flex; align-items:center; justify-content:center; font-size:13px; color:var(--ink-dim);
+  z-index:2; pointer-events:auto;
+}
+
+/* label only appears on hover / while awake — nothing shown at rest */
+.tag{
+  position:absolute; left:50%; top:0; transform:translate(-50%,-6px);
+  white-space:nowrap; font-family:'Space Grotesk',sans-serif; font-size:11px; letter-spacing:.14em;
+  color:var(--stage-color,var(--teal)); background:rgba(10,8,4,.72); border:1px solid var(--line);
+  padding:5px 12px; border-radius:999px; opacity:0; pointer-events:none; transition:.25s;
+  text-transform:uppercase; z-index:2;
+}
+.slot:not(.locked):hover .tag{ opacity:1; transform:translate(-50%,-16px); }
+.slot.awake .tag{ opacity:.5; transform:translate(-50%,-16px); }
+.slot.awake:hover .tag{ opacity:1; }
+
+.hero-footer{
+  position:absolute; bottom:10px; left:0; right:0; z-index:5;
+  text-align:center; font-size:11px; color:var(--ink-dim); opacity:.6;
+  text-shadow:0 2px 8px rgba(0,0,0,.85);
+}
+
+/* ---------- modal (dossier) ---------- */
+.modal-overlay{
+  position:fixed; inset:0; background:rgba(4,3,8,0.75); backdrop-filter:blur(4px);
+  z-index:100; display:flex; align-items:center; justify-content:center;
+  opacity:0; pointer-events:none; transition:opacity .3s;
+  padding:20px;
+}
+.modal-overlay.open{ opacity:1; pointer-events:auto; }
+.dossier{
+  width:min(640px,100%); max-height:86vh; overflow:auto;
+  background:linear-gradient(180deg,var(--parchment),#e2d9c3);
+  color:#211d17; border-radius:6px; position:relative;
+  transform:translateY(30px) rotateX(6deg); transition:transform .4s cubic-bezier(.2,.9,.3,1);
+  box-shadow:0 40px 80px rgba(0,0,0,.6);
+  padding:34px 34px 26px;
+  font-family:'Noto Serif KR',serif;
+}
+.modal-overlay.open .dossier{ transform:translateY(0) rotateX(0); }
+.dossier::before{
+  content:''; position:absolute; left:0; top:0; bottom:0; width:8px;
+  background:var(--stage-color,var(--teal));
+}
+.dossier-close{
+  position:absolute; top:16px; right:16px; width:32px; height:32px; border-radius:50%;
+  background:rgba(0,0,0,.08); border:none; cursor:pointer; font-size:16px; color:#211d17;
+}
+.dossier-head{ display:flex; align-items:baseline; gap:10px; margin-bottom:4px; }
+.dossier-head .stamp{
+  font-family:'Space Grotesk',sans-serif; font-size:11px; letter-spacing:.15em;
+  color:#6b5f45; text-transform:uppercase; border:1px solid #6b5f4555; padding:3px 8px; border-radius:999px;
+}
+.dossier h2{ font-size:26px; margin-top:10px; }
+.dossier .subtitle{ font-size:13px; color:#6b5f45; margin-top:2px; }
+.dossier .divider{ height:1px; background:#211d1725; margin:18px 0; }
+.dossier .page-text{ font-size:15.5px; line-height:1.85; white-space:pre-line; min-height:150px; }
+.dossier-tags{ margin-top:16px; display:flex; gap:8px; flex-wrap:wrap; }
+.dossier-tags span{
+  font-family:'Space Grotesk',sans-serif; font-size:11px; padding:5px 10px; border-radius:999px;
+  background:#211d1710; color:#443c2c;
+}
+.dossier-nav{ display:flex; justify-content:space-between; align-items:center; margin-top:24px; }
+.dossier-dots{ display:flex; gap:6px; }
+.dossier-dots span{ width:7px; height:7px; border-radius:50%; background:#211d1730; display:block; }
+.dossier-dots span.active{ background:var(--stage-color,var(--teal)); }
+.nav-btn{
+  font-family:'Space Grotesk',sans-serif; font-size:13px; letter-spacing:.05em;
+  background:#211d17; color:var(--parchment); border:none; padding:10px 18px; border-radius:999px;
+  cursor:pointer; transition:.2s;
+}
+.nav-btn:disabled{ opacity:.3; cursor:default; }
+.nav-btn:not(:disabled):hover{ background:var(--stage-color,var(--teal)); color:#111; }
+
+/* locked shake */
+@keyframes shake{ 0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);} 75%{transform:translateX(6px);} }
+.shake{ animation:shake .35s; }
+
+/* book popover */
+.book-pop{
+  position:absolute; z-index:20; width:220px; background:var(--parchment); color:#211d17;
+  border-radius:8px; padding:14px; font-size:13px; line-height:1.5; box-shadow:0 20px 40px rgba(0,0,0,.5);
+  transform:translate(-50%,-110%); opacity:0; pointer-events:none; transition:.2s;
+}
+.book-pop.open{ opacity:1; transform:translate(-50%,-118%); pointer-events:auto; }
+.book-pop.below{ transform:translate(-50%,30px); }
+.book-pop.below.open{ transform:translate(-50%,38px); }
+.book-pop b{ display:block; margin-bottom:4px; font-family:'Noto Serif KR',serif; font-size:14px;}
+
+</style>
+</head>
+<body>
+
+<!-- ================= TOP BAR ================= -->
+<div class="topbar">
+  <button class="icon-btn" id="menuBtn" aria-label="menu">☰</button>
+  <div class="lang-toggle">
+    <button class="active" data-lang="ko">KOR</button>
+    <button data-lang="en">ENG</button>
+  </div>
+</div>
+
+<!-- ================= SIDE MENU ================= -->
+<div class="menu-overlay" id="menuOverlay"></div>
+<nav class="menu-panel" id="menuPanel">
+  <div style="font-family:'Space Grotesk';font-size:13px;letter-spacing:.1em;color:var(--teal);">PARK TAEYANG</div>
+  <h3><span lang-ko>자기소개</span><span lang-en>About</span></h3>
+  <div class="menu-item" id="aboutOpen">
+    <span lang-ko>박태양은 누구인가</span><span lang-en>Who is Taeyang</span>
+  </div>
+
+  <h3><span lang-ko>작업물</span><span lang-en>Works</span></h3>
+  <div class="gallery-mini">
+    <a class="g-item" href="https://taeyang1188.github.io/experience/" target="_blank" style="background-image:url('./assets/works/experience.jpg')">
+      <span lang-ko>경험·미침·추함</span><span lang-en>Experience·Madness·Ugliness</span>
+    </a>
+    <div class="g-item disabled" style="background-image:url('./assets/works/void.jpg')">
+      <span lang-ko>V.O.I.D 유튜브 (준비중)</span><span lang-en>V.O.I.D Channel (Coming soon)</span>
+    </div>
+    <a class="g-item" href="https://taeyang1188.github.io/record/" target="_blank" style="background-image:url('./assets/works/record_nevus.jpg')">
+      <span lang-ko>점 — 인터랙티브 소설</span><span lang-en>점 (Dot) — Interactive Novel</span>
+    </a>
+    <a class="g-item" href="https://taeyang1188.github.io/BAJI-Site-Project1/" target="_blank" style="background-image:url('./assets/works/baji.jpg')">
+      <span lang-ko>사주 웹앱 BAJI</span><span lang-en>BAJI Saju App</span>
+    </a>
+  </div>
+
+  <h3><span lang-ko>관련 링크</span><span lang-en>Links</span></h3>
+  <a href="https://taeyang1188.github.io/experience/" target="_blank">경험·미침·추함</a>
+  <a href="https://taeyang1188.github.io/record/" target="_blank">점 · Interactive Novel</a>
+  <a href="https://taeyang1188.github.io/BAJI-Site-Project1/" target="_blank">BAJI · Saju Web App</a>
+</nav>
+
+<!-- ================= FULL-SCREEN STAGE ================= -->
+<section class="hero-stage" id="heroStage">
+  <div class="hero-photo" id="photoPlate"></div>
+  <div class="hero-photo-lit"></div>
+  <div class="lamp-glow"></div>
+  <div class="hero-scrim"></div>
+  <div class="hero-title">
+    <div class="eyebrow"><span lang-ko>나를 소개합니다</span><span lang-en>Let Me Introduce Myself</span></div>
+    <h1><span lang-ko>클릭해서 이야기를 열어보세요</span><span lang-en>Click to Open the Story</span></h1>
+    <p>
+      <span lang-ko>클릭하면 그 시절의 이야기가 펼쳐집니다.</span>
+      <span lang-en>Click to unfold that era's story.</span>
+    </p>
+  </div>
+  <div class="figures-row" id="slots"></div>
+  <div class="door-hotspot" id="doorHotspot">
+    <span class="door-tag"><span lang-ko>미래</span><span lang-en>The Future</span></span>
+  </div>
+  <div class="hero-footer">
+    <span lang-ko>© 박태양 — 유년기 · 청소년기 · 청년기 · 그리고 아직 쓰이지 않은 장</span>
+    <span lang-en>© Park Taeyang — Childhood · Youth · Adulthood · and a chapter not yet written</span>
+  </div>
+</section>
+
+<!-- ================= MODAL ================= -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="dossier" id="dossier" style="--stage-color:var(--teal)">
+    <button class="dossier-close" id="dossierClose">✕</button>
+    <div class="dossier-head">
+      <span class="stamp" id="dossierAge"></span>
+    </div>
+    <h2 id="dossierTitle"></h2>
+    <div class="subtitle" id="dossierSubtitle"></div>
+    <div class="divider"></div>
+    <div class="page-text" id="dossierText"></div>
+    <div class="dossier-tags" id="dossierTags"></div>
+    <div class="dossier-nav">
+      <div class="dossier-dots" id="dossierDots"></div>
+      <div style="display:flex; gap:8px;">
+        <button class="nav-btn" id="prevBtn">‹ <span lang-ko>이전</span><span lang-en>Prev</span></button>
+        <button class="nav-btn" id="nextBtn"><span lang-ko>다음</span><span lang-en>Next</span> ›</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =====================================================
+   DATA — edit freely. Replace image paths with real assets.
+   Recommended asset specs noted in the accompanying message.
+===================================================== */
+const STAGES = [
+  {
+    id:'child', unlocked:true, color:'#e8c15a',
+    hDefault:'34vh', hAwake:'62vh',
+    ageLabel:'AGE 7–15',
+    name:{ko:'유년기', en:'Childhood'},
+    imgDefault:'./assets/characters/아이.webp',   // crouched, default pose
+    imgAwake:'./assets/characters/중학생.webp',    // revealed on click
+    pages:[
+      { fig:{src:'./assets/characters/중학생.webp', h:'62vh'},
+        title:{ko:'그림을 그리던 아이', en:'A child who drew'},
+        sub:{ko:'7–15세', en:'Age 7–15'},
+        text:{
+          ko:'말수는 적었지만 손은 늘 무언가를 그리고 있었다.\n그림 그리고 상상의 나래 속에서만큼은 내 마음대로 원하는 모든 걸 만들 수 있었다.\n그 시절의 꿈은 아직 이름도 갖지 못한 채, 그저 "만화가"였다.',
+          en:'He rarely spoke, but his hands were always drawing something.\nOnly inside drawings and daydreams could he build anything he wanted, exactly as he wanted it.\nThe dream had no proper name yet — it was simply "cartoonist."'
+        },
+        tags:['#미술','#상상력','#감정표현서툰아이']
+      }
+    ]
+  },
+  {
+    id:'teen', unlocked:true, color:'#8fbcab',
+    hDefault:'42vh', hAwake:'75vh',
+    ageLabel:'AGE 16–23',
+    name:{ko:'청소년기', en:'Youth'},
+    imgDefault:'./assets/characters/고등학생.webp',
+    imgAwake:'./assets/characters/군인.webp',
+    pages:[
+      { fig:{src:'./assets/characters/고등학생.webp', h:'48vh'},
+        title:{ko:'시각디자인, 인덕공업고등학교', en:'Visual Design, Induk Technical High'},
+        sub:{ko:'2008.03 – 2011.02', en:'Mar 2008 – Feb 2011'},
+        text:{
+          ko:'그래픽디자인, 사진기술, 컴퓨터그래픽을 배우며 학창시절을 보냈다.\n1학년의 나는 건방진 아이였고,\n2학년엔 혼란스러운 아이였으며,\n3학년엔 중심을 완전히 잃었다.',
+          en:'His school years were spent on graphic design, photography, and computer graphics.\nIn year one he was cocky.\nIn year two he was confused.\nBy year three he had lost his center entirely.'
+        },
+        tags:['#시각디자인','#내신4.3등급']
+      },
+      { fig:{src:'./assets/characters/군인.webp', h:'75vh'},
+        title:{ko:'포기, 그리고 입대', en:'Letting go, then enlisting'},
+        sub:{ko:'2013.11 – 2015.07 · 육군 병장 만기제대', en:'Nov 2013 – Jul 2015 · Army, Sergeant, honorable discharge'},
+        text:{
+          ko:'예술을 향한 꿈은 1년간 재수를 한 뒤 합격한 천안의 백석대학교를 1년간 다니는 동안 조용히 내려놓았다.\n스물한 살, 군에 입대해 2년 가까이를 보냈다.\n무언가를 포기한다는 것도, 어쩌면 다음 장으로 넘어가기 위한 하나의 자세였다.',
+          en:'The dream of art was quietly set down during a year at Baekseok University in Cheonan — a school he had earned through a year of retaking exams.\nAt twenty-one, he entered the army and spent nearly two years there.\nLetting something go, it turned out, was also a way of standing up for the next chapter.'
+        },
+        tags:['#군필','#자퇴','#전환점']
+      }
+    ]
+  },
+  {
+    id:'adult', unlocked:true, color:'#d97b4f',
+    hDefault:'66vh', hAwake:'78vh',
+    ageLabel:'AGE 24–27',
+    name:{ko:'청년기', en:'Adulthood'},
+    imgDefault:'./assets/characters/호주.webp',
+    imgAwake:'./assets/characters/대부중개.webp',
+    pages:[
+      { fig:{src:'./assets/characters/호주.webp', h:'75vh'},
+        title:{ko:'불안의 끝, 호주 워킹홀리데이', en:'The far end of anxiety: Australia'},
+        sub:{ko:'2017.04 – 2017.12 · 킬코이 육가공공장', en:'Apr – Dec 2017 · Kilcoy meat processing plant'},
+        text:{
+          ko:'알바를 하며 지내던 중 아버지와의 관계가 격화되면서, 홧김에 100만원을 들고 호주 워킹홀리데이 행 비행기에 올랐다.\n하루 12시간, 손가락 열 개 중 성한 곳 없이 모든 손톱이 다 뽑히는 정도의 업무 강도를 겪으며 본의 아니게 정신 개조가 되었다.\n기존의 가치관이 송두리째 뽑히고, 백지가 된 상태로 귀국했다.',
+          en:'After things with his father boiled over, he grabbed a million won and boarded a flight to Australia on impulse.\nTwelve-hour days at a meat plant — hands wrecked, every fingernail gone — rebuilt him whether he wanted it or not.\nHis old values were pulled out by the roots. He came home a blank page.'
+        },
+        tags:['#워킹홀리데이','#정신개조','#백지상태']
+      },
+      { fig:{src:'./assets/characters/대부중개.webp', h:'78vh'},
+        title:{ko:'상담과 신뢰, 해피머니–시크릿캐피탈', en:'Trust over a phone line'},
+        sub:{ko:'2018.02 – 2022.11 · 팀장', en:'Feb 2018 – Nov 2022 · Team Lead'},
+        text:{
+          ko:'힘든 걸로는 손에 꼽는 직업인 도축일을 하고 돌아온 나는 무서운 게 없었다.\n알바천국을 보고 이런저런 일에 지원했고, 그중 대출 상담이라는 일을 아르바이트처럼 시작했다. 그러다 어느새 욕심이 생겼다.\n카피라이팅 책을 사서 필사하고, 소리 내어 읽고, 가족에게 들려주며 멘트를 다듬었다.\n결과는 당시 다니던 해피머니 전 지점 누적 매출 1위. 그리고 단 한 건의 클레임도 없었다.\n시크릿캐피탈로 이직한 뒤에는 네이버 지식iN 바이럴을 스스로 운영하며 자신만의 고객풀을 만들어갔다.',
+          en:'Back from one of the hardest jobs there is, nothing scared him anymore.\nAmong the jobs he applied for, loan consulting started as just another gig — until ambition crept in.\nHe copied out copywriting books by hand, read them aloud, tested every line on his family.\nThe result: #1 cumulative sales across all Happy Money branches, without a single client complaint.\nAfter moving to Secret Capital, he built his own client pool through self-run Naver Q&A viral marketing.'
+        },
+        tags:['#영업1위','#카피라이팅']
+      },
+      { fig:{src:'./assets/characters/대부중개.webp', h:'78vh'},
+        title:{ko:'퇴근 후의 유튜브', en:'YouTube after work'},
+        sub:{ko:'약 1년 · 롱폼 25편', en:'~1 year · 25 long-form videos'},
+        text:{
+          ko:'지인과 함께 퇴근 후 채널을 운영하며 5–10분짜리 영상을 스물다섯 편 만들었다.\n구독자 500명을 넘긴 무렵, 매일 밤을 갈아 넣던 피로가 꿈을 앞질렀다.\n유튜브는 멈췄지만, 창작에 대한 경험은 고스란히 남았다.',
+          en:'With a friend, after work, he made twenty-five long-form videos.\nRight around 500 subscribers, nightly exhaustion finally caught up with the dream.\nThe channel stopped — but the experience of making things stayed, intact.'
+        },
+        tags:['#유튜브','#협업','#동기부여']
+      }
+    ]
+  },
+  {
+    id:'recent', unlocked:true, color:'#f2c14e',
+    hDefault:'70vh', hAwake:'78vh',
+    ageLabel:'AGE 27–33',
+    name:{ko:'최근', en:'Recent'},
+    imgDefault:'./assets/characters/대부중개_2photoroom.webp',
+    imgAwake:'./assets/characters/대부중개_2photoroom.webp',
+    pages:[
+      { title:{ko:'퇴사해도 남는 것, 유니파이', en:'What outlasts a resignation'},
+        sub:{ko:'2025.06 – 2026.01 · 영업1팀', en:'Jun 2025 – Jan 2026 · Sales Team 1'},
+        text:{
+          ko:'신입 영업사원이었지만, 사비로 Replit을 결제해 동료들의 업무를 돕는 스크립트 도구를 만들었다.\nTampermonkey로 게시판 요청 자동화를, 네이버 실시간 키워드 조회 연동까지 만들었다.\n퇴사한 지금도, 예전 팀장에게서 "그거 다시 고쳐줄 수 있어?"라는 연락이 온다.',
+          en:'As a junior salesperson, he paid out of pocket for Replit to build tools that helped his teammates.\nHe automated intranet requests with Tampermonkey and wired up real-time Naver keyword lookups.\nEven after leaving, his old team lead still messages him: "can you fix that thing again?"'
+        },
+        tags:['#바이브코딩','#자동화도구','#최적화']
+      },
+      { title:{ko:'다시 쓰는 첫 장, 연출/창작자에 대한 꿈', en:'A first chapter, rewritten: the maker\'s dream'},
+        sub:{ko:'글쓰기 · 창작 · 컨텐츠', en:'Writing · Creation · Content'},
+        text:{
+          ko:'예술, 상담, 도구를 만드는 일 전부를 지나온 지금.\n이제는 손으로 직접 만지고 고치는 일에 꽤 능숙해졌다.\n다음 장은 아직 쓰이지 않았지만, 이번엔 스스로 문을 두드리겠다.',
+          en:'Art, client trust, tool-building — he has passed through all of it.\nBy now, making and fixing things with his own hands is something he\'s genuinely good at.\nThe next chapter isn\'t written yet — but this time, he\'ll be the one knocking.'
+        },
+        tags:['#딥다이버','#연출자','#글쓰기']
+      }
+    ]
+  }
+];
+
+const BOOKSHELF_ITEMS = [
+  // x/y are % positions inside .hero-photo — tuned to assets/bg/room.webp
+  { x:'2.5%', y:'38%',
+    title:{ko:'좋아하는 책', en:'Favorite Book'},
+    note:{ko:'『Getting Things Done』 — 내 머릿속의 메모가 실제 세상이라는 틀에 부어지면 형태가 생긴다는 것을 처음 알게 한 책.', en:'"Getting Things Done" — the book that first showed him that a note in his head takes on form the moment it is poured into the mold of the real world.'} },
+  { x:'8%', y:'20%',
+    title:{ko:'좋아하는 영화', en:'Favorite Film'},
+    note:{ko:'『트루먼 쇼』 — 세상은 내가 믿는 대로 모습을 드러낸다.', en:'"The Truman Show" — the world reveals itself in the shape of what you believe.'} },
+  { x:'11%', y:'34%',
+    title:{ko:'좋아하는 캐릭터', en:'Favorite Character'},
+    note:{ko:'돈키호테 — 불가능한 믿음을 끝까지 끌고 가면, 그 삶의 끝은 내게 무엇을 보여줄까?', en:'Don Quixote — if you carry an impossible belief all the way to the end, what does that life show you at its close?'} },
+  { x:'94%', y:'70%',
+    title:{ko:'책상 위 스탠드', en:'The Desk Lamp'},
+    note:{ko:'알아차림 — 나의 내면의 잠재의식이 세상에 펼쳐진다.', en:'Awareness — the subconscious within unfolds itself into the world.'} },
+];
+
+/* =====================================================
+   RENDER: slots
+===================================================== */
+const slotsEl = document.getElementById('slots');
+const SLOT_ORDER = ['recent','adult','teen','child']; // left → right
+const STAGES_ORDERED = SLOT_ORDER.map(id => STAGES.find(s => s.id === id));
+
+// mobile: 2x2 grid needs shorter figures, so scale all vh heights down once
+const IS_MOBILE = window.matchMedia('(max-width:820px)').matches;
+if(IS_MOBILE){
+  const scale = v => v ? (parseFloat(v)*0.48).toFixed(1)+'vh' : v;
+  STAGES.forEach(s=>{
+    s.hDefault = scale(s.hDefault); s.hAwake = scale(s.hAwake);
+    (s.pages||[]).forEach(p=>{ if(p.fig) p.fig.h = scale(p.fig.h); });
+  });
+}
+
+STAGES_ORDERED.forEach(stage=>{
+  const el = document.createElement('div');
+  el.className = 'slot' + (stage.unlocked ? '' : ' locked');
+  el.style.setProperty('--stage-color', stage.color);
+  el.innerHTML = `
+    <div class="tag"><span lang-ko>${stage.name.ko}</span><span lang-en>${stage.name.en}</span></div>
+    <div class="ground-shadow"></div>
+    <div class="figure-wrap" style="height:${stage.hDefault}">
+      <img class="figure-svg pose-shadow" src="${stage.imgDefault}" data-default="${stage.imgDefault}" data-awake="${stage.imgAwake}"
+           data-h-default="${stage.hDefault}" data-h-awake="${stage.hAwake}"
+           onerror="this.onerror=null; this.src=fallbackSVG('${stage.id}','${stage.color}');">
+      <div class="burst"></div>
+    </div>
+    ${stage.unlocked ? '' : '<div class="lock-badge">🔒</div>'}`;
+  el.addEventListener('click', ()=> stage.unlocked ? openStage(stage, el) : lockedShake(el));
+  slotsEl.appendChild(el);
+  // preload awake + every page figure so click/page transitions never flicker
+  if(stage.unlocked){
+    if(stage.imgAwake) new Image().src = stage.imgAwake;
+    (stage.pages||[]).forEach(p=>{ if(p.fig && p.fig.src) new Image().src = p.fig.src; });
+  }
+});
+
+// simple inline-SVG humanoid placeholder so the prototype works with zero assets
+function fallbackSVG(id, color){
+  const svg = `
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 340">
+    <ellipse cx="100" cy="325" rx="70" ry="10" fill="#000" opacity="0.3"/>
+    <circle cx="100" cy="55" r="34" fill="${color}"/>
+    <path d="M55 300 Q40 170 60 140 Q100 110 140 140 Q160 170 145 300 Q100 320 55 300 Z" fill="${color}"/>
+  </svg>`;
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+}
+
+function lockedShake(el){
+  el.classList.add('shake');
+  setTimeout(()=>el.classList.remove('shake'), 350);
+}
+
+/* =====================================================
+   RENDER: bookshelf hotspots
+===================================================== */
+// NOTE: hotspots must live on heroStage, not on .hero-photo — the grayscale filter on
+// .hero-photo creates a stacking context that would trap them beneath the lit overlay.
+const bg = document.getElementById('heroStage');
+let popEl = null;
+BOOKSHELF_ITEMS.forEach((item,i)=>{
+  const b = document.createElement('div');
+  b.className = 'book-hotspot';
+  b.style.left = item.x; b.style.top = item.y;
+  b.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    toggleBookPop(b, item);
+  });
+  bg.appendChild(b);
+});
+function toggleBookPop(anchor, item){
+  if(popEl){ popEl.remove(); popEl=null; }
+  const pop = document.createElement('div');
+  const xPct = parseFloat(anchor.style.left);
+  const yPct = parseFloat(anchor.style.top);
+  pop.className = 'book-pop open' + (yPct < 30 ? ' below' : ''); // near the top → open downward
+  pop.style.left = Math.min(Math.max(xPct, 12), 88) + '%';       // clamp so the card never clips off the sides
+  pop.style.top = anchor.style.top;
+  pop.innerHTML = `<b><span lang-ko>${item.title.ko}</span><span lang-en>${item.title.en}</span></b>
+    <span lang-ko>${item.note.ko}</span><span lang-en>${item.note.en}</span>`;
+  bg.appendChild(pop);
+  popEl = pop;
+  document.addEventListener('click', function closePop(e){
+    if(!pop.contains(e.target)){ pop.remove(); document.removeEventListener('click', closePop); }
+  });
+}
+
+/* =====================================================
+   STAGE OPEN → awaken animation → modal
+===================================================== */
+let currentStage = null, currentPage = 0, currentSlotEl = null;
+
+function setFigure(el, src, h){
+  const img = el && el.querySelector('.figure-svg');
+  if(!img) return;
+  if(src) img.src = src;
+  if(h) img.closest('.figure-wrap').style.height = h;
+}
+
+function openStage(stage, el){
+  // previously-awakened figures stay revealed — the room fills with color as eras are explored
+  el.classList.add('awake');
+  // finale: when every era has been awakened, light starts leaking from behind the future door
+  if(document.querySelectorAll('.slot.awake').length >= STAGES_ORDERED.length){
+    document.getElementById('doorHotspot').classList.add('lit');
+  }
+  currentSlotEl = el;
+  const p0 = stage.pages && stage.pages[0];
+  const img = el.querySelector('.figure-svg');
+  if(img){
+    setFigure(el,
+      (p0 && p0.fig && p0.fig.src) || img.dataset.awake,
+      (p0 && p0.fig && p0.fig.h)  || img.dataset.hAwake || img.dataset.hDefault);
+  }
+  currentStage = stage; currentPage = 0;
+  setTimeout(()=> showModal(stage), 950); // let the crouch→stand transform play out before the dossier opens
+}
+
+const modalOverlay = document.getElementById('modalOverlay');
+const dossier = document.getElementById('dossier');
+function showModal(stage){
+  dossier.style.setProperty('--stage-color', stage.color);
+  renderPage();
+  modalOverlay.classList.add('open');
+}
+function renderPage(){
+  const p = currentStage.pages[currentPage];
+  if(p.fig && currentSlotEl) setFigure(currentSlotEl, p.fig.src, p.fig.h); // figure follows the story page
+  document.getElementById('dossierAge').textContent = currentStage.ageLabel;
+  document.getElementById('dossierTitle').innerHTML =
+    `<span lang-ko>${p.title.ko}</span><span lang-en>${p.title.en}</span>`;
+  document.getElementById('dossierSubtitle').innerHTML =
+    `<span lang-ko>${p.sub.ko}</span><span lang-en>${p.sub.en}</span>`;
+  document.getElementById('dossierText').innerHTML =
+    `<span lang-ko>${p.text.ko}</span><span lang-en>${p.text.en}</span>`;
+  document.getElementById('dossierTags').innerHTML =
+    p.tags.map(t=>`<span>${t}</span>`).join('');
+  const dots = document.getElementById('dossierDots');
+  dots.innerHTML = currentStage.pages.map((_,i)=>`<span class="${i===currentPage?'active':''}"></span>`).join('');
+  document.getElementById('prevBtn').disabled = currentPage===0;
+  document.getElementById('nextBtn').disabled = currentPage===currentStage.pages.length-1;
+}
+document.getElementById('prevBtn').onclick = ()=>{ if(currentPage>0){currentPage--; renderPage();} };
+document.getElementById('nextBtn').onclick = ()=>{ if(currentPage<currentStage.pages.length-1){currentPage++; renderPage();} };
+document.getElementById('dossierClose').onclick = closeModal;
+modalOverlay.addEventListener('click', (e)=>{ if(e.target===modalOverlay) closeModal(); });
+function closeModal(){
+  modalOverlay.classList.remove('open');
+  currentSlotEl = null;
+  // figures intentionally stay in their last-viewed pose/color after the dossier closes
+}
+
+/* =====================================================
+   MENU + LANG TOGGLE
+===================================================== */
+const menuBtn = document.getElementById('menuBtn');
+const menuPanel = document.getElementById('menuPanel');
+const menuOverlay = document.getElementById('menuOverlay');
+menuBtn.onclick = ()=>{ menuPanel.classList.toggle('open'); menuOverlay.classList.toggle('open'); };
+menuOverlay.onclick = ()=>{ menuPanel.classList.remove('open'); menuOverlay.classList.remove('open'); };
+
+document.querySelectorAll('.lang-toggle button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.lang-toggle button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    document.body.classList.toggle('lang-en', btn.dataset.lang==='en');
+  });
+});
+
+document.getElementById('doorHotspot').addEventListener('click', ()=>{
+  currentSlotEl = null;
+  currentStage = { ageLabel:'AGE 34 –', color:'#8f8474',
+    pages:[{
+      title:{ko:'미래', en:'The Future'},
+      sub:{ko:'문 너머의 장', en:'The chapter beyond the door'},
+      text:{
+        ko:'집요하게 굳어버린 믿음을 내려놓은 뒤에야, 진짜 세상이 보이기 시작했다.\n누군가 발견해주기만을 기다리는, 잠재력과 가능성으로 가득한 세상.\n모든 추상적인 느낌과 감각들은 다시 글과 이미지로, 이야기와 감동으로 쓰이기를 기다리고 있다.\n\n이러한 창조 활동은 누구에게나 일종의 도전이다.\n애벌레가 고치 안에서 완전히 녹아내린 후 전혀 새로운 형태의 날개를 얻듯,\n기존의 형태를 버리는 선택을 통해서 우리는 더욱 놀랍고 유연한 몸을 얻을 수 있다.\n\n과거 대출중개 일을 하면서 느낀 경제적 안정감은 분명 달콤했지만,\n내 손으로 굳힌 결과물들을, 모든 걸 녹여내는 쇳물에 다시 한번 붓기로 결심했다.\n내 선택은 나를 더 높은 곳으로 인도하고 있다.\n잠깐의 후퇴, 혹은 익숙한 장소를 벗어나는 일. \'이곳은 더 이상 내 성장에 도움이 되지 않는다\'는 직관과 느낌들.\n\n눈에 보이지 않는 흐름을 믿고, 과정을 신뢰하며 걷는 동안\n이 삶 속에서 더 큰 나를 발견할 수 있길 바라며,\n조급한 마음은 접어두고, 이 길의 끝까지 묵묵히 걸어가려 한다.',
+        en:'Only after setting down a belief hardened by sheer persistence did the real world begin to show itself.\nA world full of potential and possibility, waiting only to be discovered.\nEvery abstract feeling and sensation is waiting to be written again — into words and images, into stories that move people.\n\nCreation of this kind is a challenge for anyone.\nLike a caterpillar that melts away completely inside its cocoon and gains wings of an entirely new form,\nit is by choosing to abandon the old shape that we gain a body more astonishing and more supple.\n\nThe financial stability of my loan-brokerage days was undeniably sweet —\nbut I resolved to pour the results I had hardened with my own hands back into the crucible that melts everything down.\nThat choice is carrying me somewhere higher.\nA brief retreat, or leaving a familiar place — the intuition that \"this ground no longer feeds my growth.\"\n\nTrusting the unseen current, trusting the process as I walk,\nhoping to discover a larger version of myself within this life,\nI set impatience aside and mean to walk this road, quietly, to its very end.'
+      },
+      tags:['#탈피','#과정에대한신뢰','#TO_BE_CONTINUED']
+    }]
+  };
+  currentPage = 0;
+  showModal(currentStage);
+});
+
+document.getElementById('aboutOpen').addEventListener('click', ()=>{
+  currentStage = { ageLabel:'ABOUT', color:'#e0a568',
+    pages:[{
+      title:{ko:'박태양', en:'Park Taeyang'},
+      sub:{ko:'1993.02.26 (양력) · 사색가 · 이야기를 만드는 사람', en:'Feb 26, 1993 (solar) · Notionalist · Someone who makes stories'},
+      text:{
+        ko:'전문 분야에 대한 경력은 없지만, 맡은 일에는 늘 자신만의 방법으로 파고드는 사람입니다.',
+        en:'No formal background in the field applied for — but someone who always digs into a task in his own way.'
+      },
+      tags:['#고독한성취가','#몰입하는사람']
+    }]
+  };
+  currentPage = 0;
+  showModal(currentStage);
+  menuPanel.classList.remove('open'); menuOverlay.classList.remove('open');
+});
+</script>
+</body>
+</html>
