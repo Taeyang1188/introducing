@@ -323,8 +323,8 @@ body.lang-en [lang-ko]{display:none;}
   padding:5px 12px; border-radius:999px; opacity:0; pointer-events:none; transition:.25s;
   text-transform:uppercase; z-index:2;
 }
-.slot:not(.locked):hover .tag{ opacity:1; transform:translate(-50%,-16px); }
-.slot.awake .tag{ opacity:.5; transform:translate(-50%,-16px); }
+.slot:not(.locked):hover .tag{ opacity:1; transform:translate(-50%,-4.5vh); }
+.slot.awake .tag{ opacity:.5; transform:translate(-50%,-4.5vh); }
 .slot.awake:hover .tag{ opacity:1; }
 
 .hero-footer{
@@ -429,7 +429,7 @@ body.lang-en [lang-ko]{display:none;}
   .slot:not(.active) .lock-badge {
     pointer-events:none !important;
   }
-  .slot.active .tag{ opacity:.85; transform:translate(-50%,-16px); }
+  .slot.active .tag{ opacity:.85; transform:translate(-50%,-4.5vh) !important; }
   
   /* Make characters visually larger and more prominent on mobile */
   .figure-svg{
@@ -511,12 +511,11 @@ body.lang-en [lang-ko]{display:none;}
 
   /* Mobile Lamp Alignment & Glowing Animations */
   .lamp-glow {
-    left: 82% !important;
-    top: 53% !important;
+    display: none !important;
   }
   .hero-photo-lit {
-    clip-path: circle(0% at 82% 53%) !important;
-    animation: lightSpreadMobile 2s cubic-bezier(.3,.55,.25,1) .8s forwards !important;
+    clip-path: circle(0% at 83% 53%);
+    animation: lightSpreadMobile 2s cubic-bezier(.3,.55,.25,1) .8s forwards;
   }
 }
 
@@ -534,8 +533,8 @@ body.lang-en [lang-ko]{display:none;}
 }
 
 @keyframes lightSpreadMobile {
-  from { clip-path: circle(0% at 82% 53%); }
-  to { clip-path: circle(155% at 82% 53%); }
+  from { clip-path: circle(0% at 83% 53%); }
+  to { clip-path: circle(155% at 83% 53%); }
 }
 
 </style>
@@ -1063,8 +1062,8 @@ if(IS_MOBILE){
     if(touchX===null) return;
     const dxSwipe = e.changedTouches[0].clientX - touchX;
     if(Math.abs(dxSwipe) > 45){
-      if(dxSwipe < 0 && idx < SLIDES.length-1){ idx++; apply(); }
-      else if(dxSwipe > 0 && idx > 0){ idx--; apply(); }
+      if(dxSwipe > 0 && idx < SLIDES.length-1){ idx++; apply(); }
+      else if(dxSwipe < 0 && idx > 0){ idx--; apply(); }
     }
     touchX = null;
   }, {passive:true});
