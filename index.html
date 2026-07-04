@@ -233,26 +233,6 @@ body.lang-en [lang-ko]{display:none;}
   display:flex; align-items:flex-end; justify-content:space-between;
   padding:0 3%;
 }
-@media (max-width:820px){
-  .hero-title{ padding-top:76px; }
-  .hero-title p{ display:none; }
-  /* ---- carousel mode: one era per screen, camera pans across the room photo ---- */
-  .hero-photo, .hero-photo-lit{ transition: background-position 1.15s cubic-bezier(.4,.08,.2,1); }
-  .figures-row{ display:block; bottom:7%; padding:0; }
-  .slot{
-    position:absolute; left:50%; bottom:0;
-    transform:translateX(-50%) translateY(16px);
-    opacity:0; transition:opacity .5s ease, transform .5s ease;
-    animation:none;
-  }
-  .slot.active{ opacity:1; transform:translateX(-50%) translateY(0); }
-  .slot.active .tag{ opacity:.85; transform:translate(-50%,-16px); }
-  .door-hotspot{ display:none; } /* door crop is unreliable on narrow screens; the door gets its own slide */
-  .book-hotspot{ display:none; } /* objects move into the menu on mobile — the photo crop hides their anchors */
-  .carousel-nav{ display:flex; }
-  .carousel-dots{ display:flex; }
-  .mobile-only{ display:block; }
-}
 
 /* carousel controls (mobile only; hidden on desktop) */
 .carousel-nav{
@@ -419,6 +399,144 @@ body.lang-en [lang-ko]{display:none;}
 .book-pop.below{ transform:translate(-50%,30px); }
 .book-pop.below.open{ transform:translate(-50%,38px); }
 .book-pop b{ display:block; margin-bottom:4px; font-family:'Noto Serif KR',serif; font-size:14px;}
+
+@media (max-width:820px){
+  .hero-title{ padding-top:76px; }
+  .hero-title p{ display:none; }
+  /* ---- carousel mode: one era per screen, camera pans across the room photo ---- */
+  .hero-photo, .hero-photo-lit{ transition: background-position 1.15s cubic-bezier(.4,.08,.2,1); }
+  .figures-row{ display:block; bottom:7%; padding:0; }
+  
+  /* Slot positioning and pointer-events control on mobile */
+  .slot{
+    position:absolute !important; left:50% !important; bottom:0 !important;
+    transform:translateX(-50%) translateY(16px);
+    opacity:0; transition:opacity .5s ease, transform .5s ease;
+    animation:none;
+    pointer-events:none !important;
+    flex:none !important;
+    display:flex; justify-content:center;
+  }
+  .slot.active{
+    opacity:1;
+    transform:translateX(-50%) translateY(0);
+    pointer-events:auto !important;
+  }
+  .slot.active .figure-wrap {
+    pointer-events:auto !important;
+  }
+  .slot:not(.active) .figure-wrap,
+  .slot:not(.active) .lock-badge {
+    pointer-events:none !important;
+  }
+  .slot.active .tag{ opacity:.85; transform:translate(-50%,-16px); }
+  
+  /* Make characters visually larger and more prominent on mobile */
+  .figure-svg{
+    max-width:72vw !important;
+  }
+  
+  /* Lighten the dark gradient scrim on mobile to show the room details */
+  .hero-scrim {
+    background: linear-gradient(
+      180deg, 
+      rgba(6,4,2,0.4) 0%, 
+      rgba(6,4,2,0.08) 24%, 
+      rgba(6,4,2,0.02) 55%, 
+      rgba(6,4,2,0.25) 86%, 
+      rgba(6,4,2,0.45) 100%
+    ) !important;
+  }
+  
+  /* Dossier Modal mobile optimizations */
+  .dossier{
+    padding:24px 20px 20px !important;
+    max-height:90vh !important;
+    border-radius:12px !important;
+  }
+  .dossier h2{
+    font-size:22px !important;
+    margin-top:8px !important;
+  }
+  .dossier .page-text{
+    font-size:14.5px !important;
+    line-height:1.7 !important;
+  }
+  
+  /* Side Menu mobile optimizations */
+  .menu-panel{
+    padding:80px 20px 20px !important;
+    overflow-y:auto !important;
+  }
+  
+  .door-hotspot{ display:none; } /* door crop is unreliable on narrow screens; the door gets its own slide */
+  
+  /* Hotspots on mobile */
+  .book-hotspot{ display:none; }
+  #lampHotspot{
+    display:none; /* Toggled by JS on child slide */
+    left:82% !important;
+    top:70% !important;
+  }
+  
+  /* Carousel Arrows - Blinking and Glowing */
+  .carousel-nav{
+    display:flex;
+    position:absolute;
+    top:50%;
+    z-index:7;
+    background:rgba(28,20,10,0.4);
+    border:1px solid rgba(224,165,104,0.3);
+    color:var(--teal);
+    width:48px;
+    height:48px;
+    border-radius:50%;
+    align-items:center;
+    justify-content:center;
+    font-size:24px;
+    cursor:pointer;
+    box-shadow:0 0 10px rgba(224,165,104,0.2);
+    animation:arrowPulse 2s infinite ease-in-out;
+    transition:all 0.3s ease;
+    backdrop-filter:blur(4px);
+  }
+  .carousel-nav.disabled{
+    opacity:0 !important;
+    pointer-events:none !important;
+    animation:none !important;
+  }
+  
+  .carousel-dots{ display:flex; }
+  .mobile-only{ display:block; }
+
+  /* Mobile Lamp Alignment & Glowing Animations */
+  .lamp-glow {
+    left: 82% !important;
+    top: 53% !important;
+  }
+  .hero-photo-lit {
+    clip-path: circle(0% at 82% 53%) !important;
+    animation: lightSpreadMobile 2s cubic-bezier(.3,.55,.25,1) .8s forwards !important;
+  }
+}
+
+@keyframes arrowPulse {
+  0%, 100% {
+    transform: translateY(-50%) scale(1);
+    box-shadow: 0 0 8px rgba(224, 165, 104, 0.2);
+    border-color: rgba(224, 165, 104, 0.25);
+  }
+  50% {
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 0 20px rgba(224, 165, 104, 0.6);
+    border-color: rgba(224, 165, 104, 0.7);
+  }
+}
+
+@keyframes lightSpreadMobile {
+  from { clip-path: circle(0% at 82% 53%); }
+  to { clip-path: circle(155% at 82% 53%); }
+}
 
 </style>
 </head>
@@ -661,7 +779,7 @@ const STAGES_ORDERED = SLOT_ORDER.map(id => STAGES.find(s => s.id === id));
 // mobile: carousel shows one large centered figure per screen
 const IS_MOBILE = window.matchMedia('(max-width:820px)').matches;
 if(IS_MOBILE){
-  const scale = v => v ? (parseFloat(v)*0.72).toFixed(1)+'vh' : v;
+  const scale = v => v ? (parseFloat(v)*0.9).toFixed(1)+'vh' : v;
   STAGES.forEach(s=>{
     s.hDefault = scale(s.hDefault); s.hAwake = scale(s.hAwake);
     (s.pages||[]).forEach(p=>{ if(p.fig){ p.fig.h = scale(p.fig.h); p.fig.dx = scale(p.fig.dx); } });
@@ -717,6 +835,7 @@ let popEl = null;
 BOOKSHELF_ITEMS.forEach((item,i)=>{
   const b = document.createElement('div');
   b.className = 'book-hotspot';
+  if (i === 3) b.id = 'lampHotspot';
   b.style.left = item.x; b.style.top = item.y;
   b.addEventListener('click', (e)=>{
     e.stopPropagation();
@@ -891,7 +1010,7 @@ document.getElementById('aboutOpen').addEventListener('click', ()=>{
 if(IS_MOBILE){
   const SLIDES = ['child','teen','adult','recent','door']; // chronological, door last
   // where the "camera" points for each slide (background-position X of the room photo)
-  const BG_POS = { child:'88%', teen:'62%', adult:'34%', recent:'6%', door:'76%' };
+  const BG_POS = { child:'98%', teen:'62%', adult:'34%', recent:'6%', door:'90%' };
   const photo = document.querySelector('.hero-photo');
   const lit   = document.querySelector('.hero-photo-lit');
   const mobileDoor = document.getElementById('mobileDoor');
@@ -919,12 +1038,23 @@ if(IS_MOBILE){
       mobileDoor.style.display = 'none';
       slotById[id].classList.add('active');
     }
+
+    // Toggle desk lamp hotspot visibility on mobile
+    const lampHotspot = document.getElementById('lampHotspot');
+    if (lampHotspot) {
+      if (id === 'child') {
+        lampHotspot.style.display = 'block';
+      } else {
+        lampHotspot.style.display = 'none';
+      }
+    }
+
     dots.forEach((d,i)=>d.classList.toggle('on', i===idx));
-    prevBtnNav.classList.toggle('disabled', idx===0);
-    nextBtnNav.classList.toggle('disabled', idx===SLIDES.length-1);
+    prevBtnNav.classList.toggle('disabled', idx===SLIDES.length-1);
+    nextBtnNav.classList.toggle('disabled', idx===0);
   }
-  prevBtnNav.addEventListener('click', ()=>{ if(idx>0){ idx--; apply(); } });
-  nextBtnNav.addEventListener('click', ()=>{ if(idx<SLIDES.length-1){ idx++; apply(); } });
+  prevBtnNav.addEventListener('click', ()=>{ if(idx<SLIDES.length-1){ idx++; apply(); } });
+  nextBtnNav.addEventListener('click', ()=>{ if(idx>0){ idx--; apply(); } });
 
   // swipe support
   let touchX = null;
