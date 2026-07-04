@@ -512,7 +512,7 @@ const STAGES = [
         },
         tags:['#시각디자인','#내신4.3등급']
       },
-      { fig:{src:'./assets/characters/군인.webp', h:'75vh'},
+      { fig:{src:'./assets/characters/군인.webp', h:'75vh', dx:'1.8vh'},
         title:{ko:'포기, 그리고 입대', en:'Letting go, then enlisting'},
         sub:{ko:'2013.11 – 2015.07 · 육군 병장 만기제대', en:'Nov 2013 – Jul 2015 · Army, Sergeant, honorable discharge'},
         text:{
@@ -617,7 +617,7 @@ if(IS_MOBILE){
   const scale = v => v ? (parseFloat(v)*0.48).toFixed(1)+'vh' : v;
   STAGES.forEach(s=>{
     s.hDefault = scale(s.hDefault); s.hAwake = scale(s.hAwake);
-    (s.pages||[]).forEach(p=>{ if(p.fig) p.fig.h = scale(p.fig.h); });
+    (s.pages||[]).forEach(p=>{ if(p.fig){ p.fig.h = scale(p.fig.h); p.fig.dx = scale(p.fig.dx); } });
   });
 }
 
@@ -699,11 +699,13 @@ function toggleBookPop(anchor, item){
 ===================================================== */
 let currentStage = null, currentPage = 0, currentSlotEl = null;
 
-function setFigure(el, src, h){
+function setFigure(el, src, h, dx){
   const img = el && el.querySelector('.figure-svg');
   if(!img) return;
   if(src) img.src = src;
   if(h) img.closest('.figure-wrap').style.height = h;
+  const tag = el.querySelector('.tag');
+  if(tag) tag.style.marginLeft = dx || ''; // corrects badges over asymmetric poses (e.g. the salute arm)
 }
 
 function openStage(stage, el){
@@ -719,7 +721,8 @@ function openStage(stage, el){
   if(img){
     setFigure(el,
       (p0 && p0.fig && p0.fig.src) || img.dataset.awake,
-      (p0 && p0.fig && p0.fig.h)  || img.dataset.hAwake || img.dataset.hDefault);
+      (p0 && p0.fig && p0.fig.h)  || img.dataset.hAwake || img.dataset.hDefault,
+      (p0 && p0.fig && p0.fig.dx) || '');
   }
   currentStage = stage; currentPage = 0;
   setTimeout(()=> showModal(stage), 950); // let the crouch→stand transform play out before the dossier opens
@@ -734,7 +737,7 @@ function showModal(stage){
 }
 function renderPage(){
   const p = currentStage.pages[currentPage];
-  if(p.fig && currentSlotEl) setFigure(currentSlotEl, p.fig.src, p.fig.h); // figure follows the story page
+  if(p.fig && currentSlotEl) setFigure(currentSlotEl, p.fig.src, p.fig.h, p.fig.dx || ''); // figure follows the story page
   document.getElementById('dossierAge').textContent = currentStage.ageLabel;
   document.getElementById('dossierTitle').innerHTML =
     `<span lang-ko>${p.title.ko}</span><span lang-en>${p.title.en}</span>`;
