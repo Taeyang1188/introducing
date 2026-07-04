@@ -205,6 +205,14 @@ body.lang-en [lang-ko]{display:none;}
   position:absolute; top:0; left:0; right:0; z-index:5;
   text-align:center; padding:86px 20px 0;
 }
+.hero-title h1, .hero-title p {
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.hero-title h1.hidden, .hero-title p.hidden {
+  opacity: 0 !important;
+  transform: translateY(-16px) !important;
+  pointer-events: none;
+}
 .eyebrow{
   font-family:'Space Grotesk',sans-serif; font-size:12px; letter-spacing:.35em;
   color:var(--teal); text-transform:uppercase; margin-bottom:14px;
@@ -726,7 +734,7 @@ const STAGES = [
   },
   {
     id:'recent', unlocked:true, color:'#f2c14e',
-    hDefault:'70vh', hAwake:'78vh',
+    hDefault:'78vh', hAwake:'78vh',
     ageLabel:'AGE 27–33',
     name:{ko:'최근', en:'Recent'},
     imgDefault:'./assets/characters/대부중개_2photoroom.webp',
@@ -1036,6 +1044,17 @@ if(IS_MOBILE){
     } else {
       mobileDoor.style.display = 'none';
       slotById[id].classList.add('active');
+    }
+
+    // Toggle header title visibility on mobile (keep eyebrow visible)
+    const heroH1 = document.querySelector('.hero-title h1');
+    const heroP = document.querySelector('.hero-title p');
+    if (idx === 0) {
+      if (heroH1) heroH1.classList.remove('hidden');
+      if (heroP) heroP.classList.remove('hidden');
+    } else {
+      if (heroH1) heroH1.classList.add('hidden');
+      if (heroP) heroP.classList.add('hidden');
     }
 
     // Toggle desk lamp hotspot visibility on mobile
